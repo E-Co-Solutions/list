@@ -1,0 +1,63 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: ETSEI Go Build Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build:
+    name: ETSEI Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout ETSEI Repository
+      uses: actions/checkout@v4
+      
+    - name: Welcome Message
+      run: echo "🚀 Starting build for Eric Todd Sawyer Enterprise International"
+
+    - name: Set up Go Environment
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+        cache: true
+
+    - name: Install Dependencies
+      run: |
+        echo "📦 Installing project dependencies..."
+        go mod download
+        go mod verify
+
+    - name: ETSEI Code Quality Check
+      run: |
+        echo "🔍 Running code quality checks..."
+        go fmt ./...
+        go vet ./...
+        
+    - name: Build ETSEI Services
+      run: |
+        echo "🏗️ Building Eric Todd Sawyer Enterprise International services..."
+        go build -v -o bin/etsei-service ./...
+        
+    - name: Run ETSEI Test Suite
+      run: |
+        echo "🧪 Running comprehensive test suite..."
+        go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+        
+    - name: Upload Test Coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.txt
+        flags: unittests
+        name: ETSEI-Code-Coverage
+        
+    - name: Build Complete
+      run: |
+        echo "✅ Build completed successfully for Eric Todd Sawyer Enterprise International"
+        echo "📊 Build artifacts ready for deployment"
